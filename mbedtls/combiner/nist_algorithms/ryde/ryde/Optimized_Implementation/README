@@ -1,0 +1,182 @@
++=============================================================================+
+|                                                                             |
+|               ***********************************************               |
+|               *     POST-QUANTUM CRYPTO STANDARDIZATION     *               |
+|               ***********************************************               |
+|                                                                             |
+|=============================================================================|
+|                                                                             |
+|        Proposal: RYDE                                                       |
+|                                                                             |
+|        Submitters (by alphabetical order):                                  |
+|                  - Nicolas ARAGON                                           |
+|                  - Magali BARDET                                            |
+|                  - Loïc BIDOUX                                              |
+|                  - Jesús-Javier CHI-DOMÍNGUEZ                               |
+|                  - Victor DYSERYN                                           |
+|                  - Thibauld FENEUIL                                         |
+|                  - Philippe GABORIT                                         |
+|                  - Antoine JOUX                                             |
+|                  - Romaric NEVEU                                            |
+|                  - Matthieu RIVAIN                                          |
+|                  - Jean-Pierre TILLICH                                      |
+|                  - Adrien VINÇOTTE                                          |
+|                                                                             |
+|        Inventors: Same as submitters                                        |
+|                                                                             |
+|        Developers: Same as submitters                                       |
+|                                                                             |
+|        Owners: Same as submitters                                           |
+|                                                                             |
++=============================================================================+
+
+This archive is a proposal in response to NIST's call for proposal for standar-
+dization of quantum-resistant digital signature schemes.
+
+RYDE provides POST-QUANTUM SIGNATURES and targets NIST's
+security levels 1, 3, and 5.
+
+===============================================================================
+
+This archive is organized as follows:
+
+- KATs: Known Answer Test values and verbose outputs for each parameter set
+- Reference_Implementation: Reference implementation for each parameter set
+- Optimized_Implementation: Optimized implementation for each parameter set
+- Supporting_Documentation: Supporting documentation
+
+===============================================================================
+
+1. SUBMISSION OVERVIEW
+----------------------
+
+Both reference implementation and optimized implementations provide the twelve
+parameter sets as detailed in the Algorithm Specifications from the Supporting
+Documentation: RYDE-XY-Z where
+
+- Security Level: X = 1, 3, or 5.
+- Fast or Short: Y = F or S
+- Commit generation: Z = Rijndael or SHA3
+
+Each parameter set folder is organized as follows:
+
+- bin/: Files generated during compilation
+- doc/: Technical documentation of the scheme
+- lib/: Third party libraries used
+- src/: Source code of the scheme
+- doxygen.conf: Documentation configuration file
+- Makefile: Makefile
+
+2. INSTALLATION INSTRUCTIONS
+----------------------------
+
+The following pieces of software and libraries are required: gcc and openssl.
+
+RYDE-XY-Z can be compiled in four different ways:
+
+- Execute make rydeXY-Z-main to compile a working example of the scheme.
+  Run ./bin/rydeXY-Z-main to execute the scheme.
+- Execute make rydeXY-Z-bench to compile a benchmark of the scheme.
+  Run ./bin/rydeXY-Z-bench to execute the scheme.
+- Execute make rydeXY-Z-kat to compile the NIST KAT generator.
+  Run ./bin/rydeXY-Z-kat to generate KAT files.
+- Execute make rydeXY-Z-verbose to compile a working example of the scheme in
+  verbose mode. Run ./bin/rydeXY-Z-verbose to generate intermediate values.
+
+During compilation, the following files are created inside the bin/build
+folder:
+
+- randombytes.o: NIST randombytes implementation
+- From XKCP project:
+  * SimpleFIPS202.o: RYDE_SHAKE implementation
+  * KeccakHash.o: RYDE_SHAKE/SHA3 implementation
+  * KeccakSponge.o: Sponge construction required in RYDE_SHAKE/SHA3 implementation
+- seedexpander.o: RYDE_SHAKE-based seed expander implementation
+- rbc_elt.o: Functions to manipulate finite fields elements.
+- rbc_mat.o: Functions to manipulate matrices.
+- rbc_mat_fq.o: Functions to manipulate binary matrices.
+- rbc_vec.o: Functions to manipulate vectors.
+- rbc_vspace.o: Functions to manipulate vector spaces.
+- tcith-rijndael.o: Functions to perform the Threshold-Computation-in-th-Head,
+  using Rijndael-based commits.
+- tcith-sha3.o: Functions to perform the Threshold-Computation-in-th-Head,
+  using SHA3-based commits.
+- parsing.o: Functions to parse public key, secret key and signature.
+- ggm_tree.o: Functions to construct GGM trees and partial GGM trees.
+- keypair.o: The RYDE key pair generation (including in verbose mode).
+- signature.o: The RYDE signing procedure (including in verbose mode).
+- verification.o: The RYDE verifying procedure (including in verbose mode).
+- sign.o: The RYDE signature scheme.
+
+3. DOCUMENTATION GENERATION
+---------------------------
+
+The following softwares are required: doxygen and bibtex.
+
+- Run doxygen doxygen.conf to generate the code documentation
+- Browse doc/html/index.html to read the documentation
+
+4. ADDITIONAL INFORMATION
+-------------------------
+The RYDE scheme is defined in the api.h and parameters.h files and implemented
+in sign.c.
+
+The files rbc.h, rbc_elt.h, rbc_mat.h, rbc_mat_fq.h, rbc_vec.h, rbc_vspace.h,
+rbc_elt.c, rbc_mat.c, rbc_mat_fq.c, rbc_vec.c and rbc_vspace.c implement the 
+various operations over finite fields required by the scheme.
+
+The files parsing.h and parsing.c provide the functions to switch between byte
+arrays and mathematical representations of the public and secret key, and the
+signature.
+
+In the src/wrapper folder, the files hash_fips202.h and seedexpander_shake.h,
+randombytes.h, randombytes.c, along with the files in the XKCP folder (see the
+lib/ folder), include RYDE_SHAKE and SHA3 implementations as well as the NIST random
+functions.
+
+Finally, the files rijndael_avx.h and rijndael_ref.h integrate both AES-128 and
+Rijndael-256 implementations. In particular, the files 
+
+- seed_expand_functions_avx.h
+- seed_expand_functions_ref.h
+
+implements the procedure to expand seeds, generate commits, and expand shares
+as required in the signature when Rijndael-based commits is employed.
+
+Given that RYDE is a rank-based scheme that heavily relies on the finite field
+arithmetic. We provide an interface for finite fields.
+In the context of our interface, a finite field always describes an extension
+of a binary field namely a finite field of the form GF(2^m).
+
+- rbc.h: Constants that defines the considered finite field ;
+- rbc_elt.h: Functions to manipulate elements of GF(2^m) ;
+- rbc_mat.h: Functions to manipulate matrices over GF(2^m);
+- rbc_mat_fq.h: Functions to manipulate matrices over GF(2);
+- rbc_vec.h: Functions to manipulate vectors over GF(2^m) ;
+- rbc_vspace.h: Functions to manipulate subspaces of GF(2^m) ;
+
+In particular, the provided implementation considers the following fields:
+
+- RYDE-1Y-Z: GF(2^53)
+- RYDE-3Y-Z: GF(2^61)
+- RYDE-5Y-Z: GF(2^67)
+
+The public key, secret key and signature are respectively composed of (H, y),
+(x) and (sm, m). Furthermore, the public key is stored as (seed1, y), while the
+secret key as (seed2). To this end, the seed expander based on shake was used
+along with 32/48/64 bytes seeds.
+
+5. REMARKS
+----------
+
+The current implementation does not exploit the usage of the 4x-paralel Keccak
+implementation. However, further versions of RYDE implementation will include:
+
+- From XKCP project:
+  * KeccakHashtimes4.o: RYDE_SHAKE/SHA3 4x-parallel implementation
+  * KeccakSpongetimes4.o: Sponge construction required in RYDE_SHAKE/SHA 4x-parallel
+    implementation
+
+===============================================================================
+
+The authors did their best to make this archive complete and proper.

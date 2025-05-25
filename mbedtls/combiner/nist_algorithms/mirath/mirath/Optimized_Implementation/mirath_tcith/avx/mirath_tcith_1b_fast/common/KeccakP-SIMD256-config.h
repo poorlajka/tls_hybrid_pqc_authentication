@@ -1,0 +1,3 @@
+#define MIRATH_KeccakP1600times4_implementation_config "AVX2, all rounds unrolled"
+#define MIRATH_KeccakP1600times4_fullUnrolling
+#define MIRATH_KeccakP1600times4_useAVX2
